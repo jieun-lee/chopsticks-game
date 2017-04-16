@@ -464,7 +464,7 @@ public class MainActivity extends AppCompatActivity {
 
                     // current hand becomes active
                     else {
-                        selectedHand = 1;
+                        selectedHand = 2;
                         setBoldText(4, true);
                         messageBox.setText(ONE_SELECTED);
                         // disable current hand, enable the others
