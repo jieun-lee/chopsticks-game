@@ -11,18 +11,22 @@ import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
 
-    public static final String PLAYER_1 = "Player 1's turn:";
-    public static final String PLAYER_2 = "Player 2's turn:";
-    public static final String NEW_TURN = " select one of your hands to begin.";
+    public static final String PLAYER_1 = "Player 1";
+    public static final String PLAYER_2 = "Player 2";
+    public static final String NEW_TURN = "'s turn: select one of your hands to begin.";
     public static final String ONE_SELECTED = "Tap opponent's hand to transfer points, or tap your own hand to change the ratio.";
     public static final String SELF_TAP = "Use the buttons on the left and right to change up the ratio.";
-    public static final String BAD_REQUEST = "Bad request! Try again:";
+    public static final String BAD_REQUEST = "Bad request! Try again! ";
+    public static final String WINNER = " wins!";
 
     public static final int COLOR_TURN = Color.YELLOW;
     public static final int COLOR_NORMAL = Color.WHITE;
 
     // indicates which player's turn it is
     private int turn;
+
+    // returns true if the game is over
+    private boolean isGameOver;
 
     // indicates which hand of current player is selected
     // 0: unselected
@@ -84,6 +88,8 @@ public class MainActivity extends AppCompatActivity {
         messagePanel.setRotation(0);
         messageBox.setText(PLAYER_1 + NEW_TURN);
         updateViewEnabled(true, true, false, false);
+
+        isGameOver = false;
 
         // no hand is selected
         selectedHand = 0;
@@ -193,26 +199,59 @@ public class MainActivity extends AppCompatActivity {
         // nothing is selected
         selectedHand = 0;
 
-        if (turn == 1) {
-            // switch from player 1 to player 2
+        // checks if the game is over
+        checkGameOver();
+
+        // if the game is over, stop the game
+        if (isGameOver) {
             setBoldText(1, false);
             setBoldText(2, false);
-            turn = 2;
-            oneText.setBackgroundColor(COLOR_NORMAL);
-            twoText.setBackgroundColor(COLOR_TURN);
-            messagePanel.setRotation(180);
-            messageBox.setText(PLAYER_2 + NEW_TURN);
-            updateViewEnabled(false, false, true, true);
-        } else {
-            // switch from player 2 to player 1
             setBoldText(3, false);
             setBoldText(4, false);
-            turn = 1;
-            oneText.setBackgroundColor(COLOR_TURN);
+            oneText.setBackgroundColor(COLOR_NORMAL);
             twoText.setBackgroundColor(COLOR_NORMAL);
+            updateViewEnabled(false, false, false, false);
+            okButton.setEnabled(true);
+        }
+
+        // if game is not over, proceed with the game
+        else {
+            if (turn == 1) {
+                // switch from player 1 to player 2
+                setBoldText(1, false);
+                setBoldText(2, false);
+                turn = 2;
+                oneText.setBackgroundColor(COLOR_NORMAL);
+                twoText.setBackgroundColor(COLOR_TURN);
+                messagePanel.setRotation(180);
+                messageBox.setText(PLAYER_2 + NEW_TURN);
+                updateViewEnabled(false, false, true, true);
+            } else {
+                // switch from player 2 to player 1
+                setBoldText(3, false);
+                setBoldText(4, false);
+                turn = 1;
+                oneText.setBackgroundColor(COLOR_TURN);
+                twoText.setBackgroundColor(COLOR_NORMAL);
+                messagePanel.setRotation(0);
+                messageBox.setText(PLAYER_1 + NEW_TURN);
+                updateViewEnabled(true, true, false, false);
+            }
+        }
+    }
+
+    // checks current status and checks if the game is over
+    private void checkGameOver() {
+        if (oneLeft < 1 && oneRight < 1) {
+            // player two wins
+            isGameOver = true;
+            messagePanel.setRotation(180);
+            messageBox.setText(PLAYER_2 + WINNER);
+        } else if (twoLeft < 1 && twoRight < 1) {
+            // player one wins
+            isGameOver = true;
             messagePanel.setRotation(0);
-            messageBox.setText(PLAYER_1 + NEW_TURN);
-            updateViewEnabled(true, true, false, false);
+            messageBox.setText(PLAYER_1 + WINNER);
         }
     }
 
@@ -530,51 +569,57 @@ public class MainActivity extends AppCompatActivity {
 
     // click to increase number of fingers on left hand
     public void okButtonPressed(View v) {
-        // will only be enabled if changeRatioMode is on
-        // check for validity
+        // will only be enabled in two cases:
+        // a) if the game is over, and we want to restart
+        // b) if changeRatioMode is on
 
-        // player 1's turn
-        if (turn == 1)  {
-            // if left equals left, right will be the same as well
-            // if left equals right, right will be the old left
-            // these are invalid cases
-            if (tempLeft == oneLeft || tempLeft == oneRight) {
-                // invalid selection, return to the beginning
-                messageBox.setText(BAD_REQUEST + NEW_TURN);
-                selectedHand = 0;
-                setBoldText(1, false);
-                setBoldText(2, false);
-                updateViewEnabled(true, true, false, false);
-            } else {
-                // valid selection
-                oneLeft = tempLeft;
-                oneRight = tempRight;
-                okButton.setEnabled(false);
-                switchTurn();
+        if (isGameOver) {
+            setup();
+
+        } else {
+            // player 1's turn
+            if (turn == 1) {
+                // if left equals left, right will be the same as well
+                // if left equals right, right will be the old left
+                // these are invalid cases
+                if (tempLeft == oneLeft || tempLeft == oneRight) {
+                    // invalid selection, return to the beginning
+                    messageBox.setText(BAD_REQUEST + PLAYER_1 + NEW_TURN);
+                    selectedHand = 0;
+                    setBoldText(1, false);
+                    setBoldText(2, false);
+                    updateViewEnabled(true, true, false, false);
+                } else {
+                    // valid selection
+                    oneLeft = tempLeft;
+                    oneRight = tempRight;
+                    okButton.setEnabled(false);
+                    switchTurn();
+                }
+                updateHand(1);
+                updateHand(2);
             }
-            updateHand(1);
-            updateHand(2);
-        }
-        // player 2's turn
-        else {
-            // same logic as above
-            if (tempLeft == twoLeft || tempLeft == twoRight) {
-                // invalid selection, return to the beginning
-                messageBox.setText(BAD_REQUEST + NEW_TURN);
-                selectedHand = 0;
-                setBoldText(3, false);
-                setBoldText(4, false);
-                updateViewEnabled(false, false, true, true);
-            } else {
-                // valid selection
-                twoLeft = tempLeft;
-                twoRight = tempRight;
-                okButton.setEnabled(false);
-                switchTurn();
+            // player 2's turn
+            else {
+                // same logic as above
+                if (tempLeft == twoLeft || tempLeft == twoRight) {
+                    // invalid selection, return to the beginning
+                    messageBox.setText(BAD_REQUEST + PLAYER_2 + NEW_TURN);
+                    selectedHand = 0;
+                    setBoldText(3, false);
+                    setBoldText(4, false);
+                    updateViewEnabled(false, false, true, true);
+                } else {
+                    // valid selection
+                    twoLeft = tempLeft;
+                    twoRight = tempRight;
+                    okButton.setEnabled(false);
+                    switchTurn();
+                }
+                updateHand(3);
+                updateHand(4);
             }
-            updateHand(3);
-            updateHand(4);
+            changeRatioMode = false;
         }
-        changeRatioMode = false;
     }
 }
