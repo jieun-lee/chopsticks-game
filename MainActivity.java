@@ -1,5 +1,6 @@
 package com.example.android.chopsticksgame;
 
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -16,6 +17,9 @@ public class MainActivity extends AppCompatActivity {
     public static final String ONE_SELECTED = "Tap opponent's hand to transfer points, or tap your own hand to change the ratio.";
     public static final String SELF_TAP = "Use the buttons on the left and right to change up the ratio.";
     public static final String BAD_REQUEST = "Bad request! Try again:";
+
+    public static final int COLOR_TURN = Color.YELLOW;
+    public static final int COLOR_NORMAL = Color.WHITE;
 
     // indicates which player's turn it is
     private int turn;
@@ -43,6 +47,9 @@ public class MainActivity extends AppCompatActivity {
     private TextView twoLeftView;
     private TextView twoRightView;
 
+    private TextView oneText;
+    private TextView twoText;
+
     private boolean changeRatioMode;
     private int tempLeft;
     private int tempRight;
@@ -61,6 +68,9 @@ public class MainActivity extends AppCompatActivity {
         twoLeftView = (TextView) findViewById(R.id.player_2_left);
         twoRightView = (TextView) findViewById(R.id.player_2_right);
 
+        oneText = (TextView) findViewById(R.id.player_1_text);
+        twoText = (TextView) findViewById(R.id.player_2_text);
+
         okButton = (Button) findViewById(R.id.ok_button);
 
         setup();
@@ -70,6 +80,7 @@ public class MainActivity extends AppCompatActivity {
     private void setup() {
         // set turn
         turn = 1;
+        oneText.setBackgroundColor(COLOR_TURN);
         messagePanel.setRotation(0);
         messageBox.setText(PLAYER_1 + NEW_TURN);
         updateViewEnabled(true, true, false, false);
@@ -187,6 +198,8 @@ public class MainActivity extends AppCompatActivity {
             setBoldText(1, false);
             setBoldText(2, false);
             turn = 2;
+            oneText.setBackgroundColor(COLOR_NORMAL);
+            twoText.setBackgroundColor(COLOR_TURN);
             messagePanel.setRotation(180);
             messageBox.setText(PLAYER_2 + NEW_TURN);
             updateViewEnabled(false, false, true, true);
@@ -195,6 +208,8 @@ public class MainActivity extends AppCompatActivity {
             setBoldText(3, false);
             setBoldText(4, false);
             turn = 1;
+            oneText.setBackgroundColor(COLOR_TURN);
+            twoText.setBackgroundColor(COLOR_NORMAL);
             messagePanel.setRotation(0);
             messageBox.setText(PLAYER_1 + NEW_TURN);
             updateViewEnabled(true, true, false, false);
